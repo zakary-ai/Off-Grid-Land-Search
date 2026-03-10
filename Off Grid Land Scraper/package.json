@@ -1,0 +1,17 @@
+{
+  "name": "off-grid-land-scraper",
+  "version": "1.0.0",
+  "description": "Apify Actor that scrapes LandSearch listings and scores them for off-grid suitability",
+  "type": "module",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "node src/main.js",
+    "test": "echo \"No tests yet\" && exit 0"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "apify": "^3.1.0",
+    "crawlee": "^3.7.0"
+  }
+}
