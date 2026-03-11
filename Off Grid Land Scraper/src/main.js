@@ -9,6 +9,17 @@ import { CheerioCrawler } from 'crawlee';
 import { createHash } from 'crypto';
 
 const LABELS = { SEARCH: 'SEARCH', DETAIL: 'DETAIL' };
+const LANDSEARCH_BASE = 'https://www.landsearch.com/properties';
+
+// ---------------------------------------------------------------------------
+// LandSearch filter URL builder
+// URL format: /properties/{location}/filter/tag=tag1%2Btag2%2Btag3
+// ---------------------------------------------------------------------------
+function buildFilterUrl(locationSlug, tagSlugs) {
+  if (!tagSlugs?.length) return `${LANDSEARCH_BASE}/${locationSlug}`;
+  const tagParam = tagSlugs.map(t => encodeURIComponent(t)).join('%2B');
+  return `${LANDSEARCH_BASE}/${locationSlug}/filter/tag=${tagParam}`;
+}
 
 // ---------------------------------------------------------------------------
 // Helpers: numbers and text
@@ -377,9 +388,16 @@ await Actor.init();
 const input = await Actor.getInput();
 const {
   startUrls = [],
+  filterLocations = [],
+  filterTags = [],
   maxListings = 50,
   maxRequestsPerCrawl = 200,
 } = input;
+
+// Build start URLs: from filterLocations + filterTags, then add any raw startUrls
+const locations = filterLocations.length ? filterLocations : (filterTags.length ? ['United-States'] : []);
+const filterUrls = locations.flatMap(loc => [buildFilterUrl(loc, filterTags)].filter(Boolean));
+const allStartUrls = [...filterUrls, ...startUrls.map(u => (typeof u === 'string' ? u : u.url))].filter(Boolean);
 
 const dataset = await Actor.openDataset();
 const listingCount = { current: 0 };
@@ -429,7 +447,7 @@ const crawler = new CheerioCrawler({
   },
 });
 
-const sources = startUrls.map(u => (typeof u === 'string' ? { url: u } : u));
+const sources = allStartUrls.map(url => ({ url }));
 const initialRequests = sources.map(({ url }) => ({ url, userData: { label: LABELS.SEARCH } }));
 
 await crawler.run(initialRequests);

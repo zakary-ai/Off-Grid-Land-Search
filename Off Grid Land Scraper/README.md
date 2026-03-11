@@ -50,13 +50,52 @@ To test with custom input locally, set `APIFY_INPUT_KEY_VALUE_STORE_ID` and put 
 
 The **Dockerfile** at the repo root is used for building the Actor image.
 
+## Filter URL format
+
+LandSearch uses URLs like:
+
+`https://www.landsearch.com/properties/{location}/filter/tag=tag1%2Btag2`
+
+- **location**: e.g. `tallahassee-fl`, `denver-co`, `United-States`, or any location slug from the site.
+- **tag**: one or more tag slugs joined by `+` (encoded as `%2B`). Example: Off-grid + By owner → `tag=off-grid%2Bby-owner`.
+
+You can either pass full **startUrls** or use **filterLocations** + **filterTags**; the actor builds the filter URLs for you.
+
+### Tag slugs (use in `filterTags`)
+
+Use these exact slugs (lowercase, hyphenated). Multiple tags are combined with `+` in the URL.
+
+| Category    | Slugs |
+|------------|--------|
+| **Types**  | `residential`, `commercial`, `agricultural`, `recreational` |
+| **Geography** | `beachfront`, `island`, `mountain`, `resort`, `rural`, `desert`, `lake-property`, `off-grid`, `river-property`, `waterfront` |
+| **Land use** | `cattle-ranch`, `dairy-farm`, `homestead`, `investment`, `organic-farm`, `row-crop`, `small-farm`, `chicken-farm`, `development`, `industrial`, `mixed-use`, `ranch`, `rv-lot`, `timber` |
+| **Structures** | `a-frame-house`, `barndominium`, `cabin`, `farm-house`, `lodge`, `tiny-home`, `barn`, `bunker`, `cottage`, `house`, `mobile-home`, `workshop` |
+| **Improvements** | `airstrip`, `irrigated`, `solar-power`, `fenced`, `septic-system`, `water-well` |
+| **Features** | `cave`, `mineral-rights`, `orchard`, `pond`, `stream`, `waterfall`, `wooded`, `creek`, `oil`, `pasture`, `spring`, `water-rights`, `wetland`, `vineyard` |
+| **Activities** | `borders-public-land`, `conservation`, `fishing`, `hunting`, `camping`, `horse-property`, `golfing`, `waterfowl` |
+| **Attributes** | `by-owner`, `distressed`, `new-construction`, `rent-to-own`, `undeveloped`, `cheap`, `historic`, `owner-financed`, `sustainable`, `unrestricted` |
+
 ## Example input
+
+**Using filter locations + tags (e.g. Off-grid and By owner in Tallahassee):**
+
+```json
+{
+  "filterLocations": ["tallahassee-fl"],
+  "filterTags": ["off-grid", "by-owner"],
+  "maxListings": 50,
+  "maxRequestsPerCrawl": 200
+}
+```
+
+**Using raw startUrls (and optional post-scrape filters):**
 
 ```json
 {
   "startUrls": [
-    { "url": "https://www.landsearch.com/properties/United-States" },
-    { "url": "https://www.landsearch.com/properties/filter/state=AZ,size[min]=2,size[max]=40/p1" }
+    "https://www.landsearch.com/properties/United-States",
+    "https://www.landsearch.com/properties/tallahassee-fl/filter/tag=off-grid%2Bby-owner"
   ],
   "maxListings": 50,
   "maxRequestsPerCrawl": 200,
@@ -70,7 +109,11 @@ The **Dockerfile** at the repo root is used for building the Actor image.
 }
 ```
 
-- **startUrls**: LandSearch search or listing index URLs.
+You can combine **filterLocations** + **filterTags** with **startUrls**; the actor crawls all of them.
+
+- **filterLocations**: Location slugs (e.g. `tallahassee-fl`, `denver-co`). If you set **filterTags** but not filterLocations, `United-States` is used.
+- **filterTags**: Tag slugs from the table above (e.g. `off-grid`, `by-owner`). Builds URLs like `.../filter/tag=off-grid%2Bby-owner`.
+- **startUrls**: LandSearch search or listing index URLs (optional if using filterLocations + filterTags).
 - **maxListings**: Stop after this many detail pages.
 - **maxRequestsPerCrawl**: Hard cap on total requests.
 - **includeStates** / **excludeStates**: State filters (e.g. `["AZ","NM"]`).
