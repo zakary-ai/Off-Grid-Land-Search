@@ -37,7 +37,7 @@ const STATE_ABBREV = {
   'north dakota': 'ND', ohio: 'OH', oklahoma: 'OK', oregon: 'OR', pennsylvania: 'PA',
   'rhode island': 'RI', 'south carolina': 'SC', 'south dakota': 'SD', tennessee: 'TN',
   texas: 'TX', utah: 'UT', vermont: 'VT', virginia: 'VA', washington: 'WA',
-  'west virginia': 'WV', wisconsin: 'WI', wyoming: 'WY', district of columbia: 'DC',
+  'west virginia': 'WV', wisconsin: 'WI', wyoming: 'WY', 'district of columbia': 'DC',
 };
 
 function normalizeState(value) {
