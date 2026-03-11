@@ -299,10 +299,18 @@ function buildOutputRecord(raw, input) {
 // Extraction from DOM (LandSearch-oriented selectors with fallbacks)
 // ---------------------------------------------------------------------------
 
+// Real listing URLs end with /{numeric-id}, e.g. .../properties/sterling-va-20165/4324762
+// Location/region pages are .../properties/tallahassee-fl with no trailing ID
 function isListingDetailUrl(url) {
   if (!url || typeof url !== 'string') return false;
   const u = url.toLowerCase();
-  return u.includes('landsearch.com/properties/') && !u.includes('/filter/') && !u.includes('/sitemap');
+  if (!u.includes('landsearch.com/properties/') || u.includes('/filter/') || u.includes('/sitemap')) return false;
+  try {
+    const path = new URL(url).pathname;
+    return /\/properties\/[^/]+\/\d+$/.test(path);
+  } catch {
+    return false;
+  }
 }
 
 function getListingUrls($, baseUrl) {
